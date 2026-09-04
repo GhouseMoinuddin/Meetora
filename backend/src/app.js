@@ -22,7 +22,7 @@ app.use("/api/v1/users", userRoutes);
 
 
 app.get("/home", (req,res)=> {
-    return res.json({hello:"world"});
+    return res.json({"hello":"world"});
 });
 
 const start = async () => {
