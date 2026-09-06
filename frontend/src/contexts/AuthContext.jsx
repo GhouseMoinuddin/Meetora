@@ -1,16 +1,18 @@
+import { typographyClasses } from '@mui/material/Typography';
 import axios, { HttpStatusCode } from 'axios';
-import {createContext} from "react";
+import {createContext, useContext,useState} from "react";
 import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext({}); 
 
 const client = axios.create({
-    baseURL : "localhost:8000/api/v1/users"
+    baseURL : "http://localhost:8000/api/v1/users"
 })
 
 export const AuthProvider = ({children})=> {
     const authContext = useContext(AuthContext);
     const [userData, setUserData] = useState(authContext);
+    
     const handleRegister = async (name,username, password)=> {
         try {
             let request = await client.post("/register", {
@@ -18,21 +20,40 @@ export const AuthProvider = ({children})=> {
                 username:username,
                 password:password
             })
-
-            if(request.status == HttpStatus.CREATED) {
+            
+            if(request.status === HttpStatusCode.Created) {
                 return request.data.message;
             }
         } catch (error) {
             throw error;   
         }
     }
+
+    const handleLogin = async (username,password) => {
+        try {
+            let request = await client.post("/login", {
+                username:username,
+                password:password
+            });
+            
+            console.log(request.data);
+
+            if(request.status === HttpStatusCode.OK) {
+                localStorage.setItem("token",request.data.token);
+                router("/home");
+            }
+        } catch (error) {
+            throw error;
+            
+        }
+    }
     const router = useNavigate();
     const data = {
-        userData, setUserData,handleRegister
+        userData, setUserData,handleRegister,handleLogin
     }
     return(
-        <AuthContext.provider value = {data}>
+        <AuthContext.Provider value = {data}>
             {children}
-        </AuthContext.provider>
+        </AuthContext.Provider>
     )
 }
