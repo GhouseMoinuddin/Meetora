@@ -33,7 +33,7 @@ const ConnecttoSocket = (server) => {
             }
 
             if(messages[path] != undefined) {
-                for(let a = 0; a< messages[path].length; i++) {
+                for(let a = 0; a< messages[path].length; a++) {
                     io.to(socket.id).emit("chat-message", messages[path][a]['data'],
                         messages[path][a]['sender'],messages[path][a]['socket-id-sender']
                     )
