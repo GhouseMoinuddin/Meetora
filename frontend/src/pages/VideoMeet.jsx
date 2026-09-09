@@ -90,7 +90,28 @@ function VideoMeetComponent() {
     },[]);
 
     let getUserMediaSuccess = (stream) => {
+        try {
+            window.localStream.getTracks().forEach(track => track.stop())
+        } catch (error) {
+            console.log(error);
+        }
+        
+        window.localStream = stream;
+        localVideoRef.current.srcObject = stream;
 
+        for(let id in connections) {
+            if(id===socketIdRef.current) continue;
+
+            connections[id].addStream(window.localStream)
+
+            connections[id].createOffer().then((description)=>{
+                connections[id].setLocalDescription(description)
+                .then(()=> {
+                    socketIdRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
+                })
+                .catch((error) => console.log(error));
+            })
+        }
     }
 
     let getUserMedia=(()=>{
@@ -116,9 +137,33 @@ function VideoMeetComponent() {
     },[Audio,Video]);
 
     //TODO
-    let gotMessageFromServer = (fromId,message) => {
+    const gotMessageFromServer = (fromId, message) => {
+    const signal = JSON.parse(message);
 
+    if(signal.ice) {
+        connections[fromId].addIceCandidate(new RTCIceCandidate(signal.ice)).catch(error => console.log(error));
     }
+
+        if (fromId === socketIdRef.current || !signal.sdp) return;
+
+        connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp))
+            .then(() => {
+                if (signal.sdp.type === "offer") {
+                    return connections[fromId].createAnswer();
+                }
+            })
+            .then((description) => {
+                if (!description) return;
+                    return connections[fromId].setLocalDescription(description);
+                })
+            .then(() => {
+                socketRef.current.emit("signal",fromId,JSON.stringify({ sdp: connections[fromId].localDescription })
+            );
+        })
+            .catch((error) => console.error(error));
+        };
+
+    
 
     //TODO add Message
     let addMessage = () => {
