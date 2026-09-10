@@ -37,6 +37,25 @@ function VideoMeetComponent() {
 
     let [videos, setVideos] = useState([]);
 
+    const silence = () => {
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        const destination = oscillator.connect(ctx.createMediaStreamDestination());
+
+        oscillator.start();
+        return Object.assign(destination.stream.getAudioTracks()[0], { enabled: false });
+    };
+
+    const black = ({ width = 640, height = 480 } = {}) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").fillRect(0, 0, width, height);
+
+        const stream = canvas.captureStream();
+        return Object.assign(stream.getVideoTracks()[0], { enabled: false });
+    };
+
     // if(isChrome()===false) {
 
     // }
@@ -112,6 +131,37 @@ function VideoMeetComponent() {
                 .catch((error) => console.log(error));
             })
         }
+
+         stream.getTracks().forEach(track =>track.onended = () => {
+            setVideo(false);
+            setAudio(false);
+
+            try {
+                let tracks = localVideoRef.current.srcObject.getTracks()
+                tracks.forEach(track => track.stop()); 
+            } catch (error) {
+                console.log(error);
+            }
+
+            //TODO Black silence
+
+            let blackSilence = (...args) => new MediaStream([black(...args),silence()]);
+            window.localStream = blackSilence();
+            localVideoRef.current.srcObject = window.localStream;
+
+            for(let id in connections) {
+                connections[id].addStream(window.localStream);
+                connections[id].createOffer().then((description)=>{
+                    connections[id].setLocalDescription(description)
+                    .then(()=>{
+                        socketRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
+                    }).catch((error)=>{
+                        console.log(error);
+                    })
+                })
+            }
+
+         })
     }
 
     let getUserMedia=(()=>{
@@ -226,6 +276,10 @@ function VideoMeetComponent() {
                     }else {
                         //TODO BLACKSILENCE
                         // let blackSilence 
+
+                        let blackSilence = (...args) => new MediaStream([black(...args),silence()]);
+                        window.localStream = blackSilence();
+                        connections[socketListId].addStream(window.localStream); 
                     }
                 })
 
@@ -286,7 +340,16 @@ function VideoMeetComponent() {
                 <div>
                     <video ref={localVideoRef} autoPlay muted></video>
                 </div>
-            </div> : <></>
+            </div> : <>
+                   <video ref = {localVideoRef} autoPlay muted></video>
+
+                   {videos.map((video) => {
+                        
+                        <div key={Video.socketId}>
+
+                        </div>
+                   })}
+            </>
             }
 
 
