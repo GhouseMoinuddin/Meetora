@@ -132,7 +132,7 @@ function VideoMeetComponent() {
             connections[id].createOffer().then((description)=>{
                 connections[id].setLocalDescription(description)
                 .then(()=> {
-                    socketRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
+                    socketIdRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
                 })
                 .catch((error) => console.log(error));
             })
@@ -202,24 +202,20 @@ function VideoMeetComponent() {
 
         if (fromId === socketIdRef.current || !signal.sdp) return;
 
-        connections[fromId]
-            .setRemoteDescription(new RTCSessionDescription(signal.sdp))
+        connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp))
             .then(() => {
-                if (signal.sdp.type !== "offer") return null;
-
-                return connections[fromId]
-                    .createAnswer()
-                    .then((description) => connections[fromId].setLocalDescription(description));
+                if (signal.sdp.type === "offer") {
+                    return connections[fromId].createAnswer();
+                }
             })
             .then((description) => {
-                if (signal.sdp.type !== "offer") return;
-
-                socketRef.current.emit(
-                    "signal",
-                    fromId,
-                    JSON.stringify({ sdp: connections[fromId].localDescription })
-                );
-            })
+                if (!description) return;
+                    return connections[fromId].setLocalDescription(description);
+                })
+            .then(() => {
+                socketRef.current.emit("signal",fromId,JSON.stringify({ sdp: connections[fromId].localDescription })
+            );
+        })
             .catch((error) => console.error(error));
         };
 
@@ -242,7 +238,7 @@ function VideoMeetComponent() {
             socketRef.current.on("chat-message", addMessage)
 
             socketRef.current.on("user-left", (id)=>{
-                setVideos((videos) => videos.filter((video) => video.socketID !== id))
+                setVideo((Videos)=>Videos.filter((Video)=>Video.socketId!==id))
             })
             socketRef.current.on("user-joined",(id,clients)=>{
                 clients.forEach((socketListId)=>{
@@ -254,13 +250,14 @@ function VideoMeetComponent() {
                         }
                     }
 
-                    const addRemoteVideo = (stream) => {
-                        let videoExists = videoRef.current.find((video) => video.socketID === socketListId);
+                    connections[socketListId].onaddstream = (event) => {
+                        
+                        let videoExists = videoRef.current.find(Video.socketID === socketListId);
 
                         if(videoExists) {
-                            setVideos(videos => {
-                                const updatedVideos = videos.map(video => 
-                                    video.socketID === socketListId ? {...video, stream} : video
+                            setVideo(Videos => {
+                                const updatedVideos = Videos.map(Video => 
+                                    Video.socketID === socketListId ? {...Video, stream:event.stream} : Video
                                 );
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
@@ -268,7 +265,7 @@ function VideoMeetComponent() {
                         }else {
                             let newVideo = {
                                 socketID :socketListId,
-                                stream,
+                                stream : event.stream,
                                 autoPlay:true,
                                 playsinline:true
                             }
@@ -279,20 +276,9 @@ function VideoMeetComponent() {
                                 return updatedVideos;
                             })
                         }
-                    };
 
-                    connections[socketListId].onaddstream = (event) => {
-                        addRemoteVideo(event.stream);
                     };
-
-                    connections[socketListId].ontrack = (event) => {
-                        const stream = event.streams[0];
-                        if (stream) {
-                            addRemoteVideo(stream);
-                        }
-                    };
-
-                    if(window.localStream !== undefined && window.localStream !== null) {
+                    if(window.localStream === undefined && window.localStream === null) {
                         connections[socketListId].addStream(window.localStream);
                     }else {
                         //TODO BLACKSILENCE
@@ -308,14 +294,17 @@ function VideoMeetComponent() {
                     for(let id2 in connections) {
                         if(id2 === socketIdRef.current) continue
 
-                        connections[id2].addStream(window.localStream)
-                        connections[id2].createOffer().then((description)=> {
-                            connections[id2].setLocalDescription(description)
-                            .then(()=> {
-                                socketRef.current.emit("signal", id2, JSON.stringify({"sdp":connections[id2].localDescription}))
+                        try {
+                            connections[id2].addStream(window.localStream)
+                        } catch (error) {
+                            connections[id2].createOffer().then((description)=> {
+                                connections[id2].setLocalDescription(description)
+                                .then(()=> {
+                                    socketRef.current.emit("signal", id2, JSON.stringify({"sdp":connections[id2].localDescription}))
+                                })
+                                .catch(error => console.log(error))
                             })
-                            .catch(error => console.log(error))
-                        })
+                        }
                     }
                 }
             })
@@ -366,19 +355,17 @@ function VideoMeetComponent() {
                         <div key={video.socketID}>
                             <h2>{video.socketID}</h2>
 
-                            <video data-socket={video.socketID}
+                            <video data-socket={video.socketId}
                             ref={ref => {
                                 if(ref && video.stream) {
                                     ref.srcObject = video.stream;
                                 }
                             }}
-                            autoPlay></video>
+                            autoPlay/>
                         </div>
                    ))}
             </>
             }
-
-
 
             {/* {window.location.href} */}
         </div>
