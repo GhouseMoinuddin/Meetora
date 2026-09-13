@@ -60,7 +60,7 @@ const ConnecttoSocket = (server) => {
                 messages[matchingRoom] = []
             }
             messages[matchingRoom].push({'sender':sender, "data":data, "socket-id-sender":socket.id })
-            console.log("message", key, ":", sender,data)
+            console.log("message", matchingRoom, ":", sender,data)
 
             connections[matchingRoom].forEach(element => {
                 io.to(element).emit("chat-message", data, sender, socket.id)
@@ -71,11 +71,11 @@ const ConnecttoSocket = (server) => {
         });
 
         socket.on("disconnect", ()=> {
-            var diffTime = Math.abs(timeOnline[socket.id]-new DataTransfer())
+            var diffTime = Math.abs(timeOnline[socket.id]-new Date())
 
             var key
             for(const [k,v] of JSON.parse(JSON.stringify(Object.entries(connections)))) {
-                if(v[a]==socket.id) {
+                if(v.includes(socket.id)) {
                     key = k
                     for(let a = 0; a<connections[key].length; ++a) {
                         io.to(connections[key][a]).emit('user-left', socket.id)

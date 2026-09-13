@@ -132,7 +132,7 @@ function VideoMeetComponent() {
             connections[id].createOffer().then((description)=>{
                 connections[id].setLocalDescription(description)
                 .then(()=> {
-                    socketIdRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
+                    socketRef.current.emit("signal", id, JSON.stringify({"sdp":connections[id].localDescription}))
                 })
                 .catch((error) => console.log(error));
             })
@@ -187,7 +187,7 @@ function VideoMeetComponent() {
     })
 
     useEffect(()=>{
-        if(Video!==undefined && Audio!==undefined) {
+        if(Video !== undefined && Audio !== undefined) {
             getUserMedia();
         }
     },[Audio,Video]);
@@ -232,13 +232,14 @@ function VideoMeetComponent() {
         socketRef.current.on('signal', gotMessageFromServer);
 
         socketRef.current.on("connect", () => {
-            socketRef.current.emit("join-call", window.location.href)
             socketIdRef.current = socketRef.current.id
             setSocketId(socketRef.current.id)
+            socketRef.current.emit("join-call", window.location.href)
+
             socketRef.current.on("chat-message", addMessage)
 
             socketRef.current.on("user-left", (id)=>{
-                setVideo((Videos)=>Videos.filter((Video)=>Video.socketId!==id))
+                setVideos((videos)=>videos.filter((video)=>video.socketID!==id))
             })
             socketRef.current.on("user-joined",(id,clients)=>{
                 clients.forEach((socketListId)=>{
@@ -252,12 +253,12 @@ function VideoMeetComponent() {
 
                     connections[socketListId].onaddstream = (event) => {
                         
-                        let videoExists = videoRef.current.find(Video.socketID === socketListId);
+                        let videoExists = videoRef.current.find((video)=>video.socketID === socketListId);
 
                         if(videoExists) {
-                            setVideo(Videos => {
-                                const updatedVideos = Videos.map(Video => 
-                                    Video.socketID === socketListId ? {...Video, stream:event.stream} : Video
+                            setVideos(videos => {
+                                const updatedVideos = videos.map(v => 
+                                    v.socketID === socketListId ? {...v, stream:event.stream} : v
                                 );
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
@@ -278,7 +279,7 @@ function VideoMeetComponent() {
                         }
 
                     };
-                    if(window.localStream === undefined && window.localStream === null) {
+                    if(window.localStream !== undefined && window.localStream !== null) {
                         connections[socketListId].addStream(window.localStream);
                     }else {
                         //TODO BLACKSILENCE
@@ -355,7 +356,7 @@ function VideoMeetComponent() {
                         <div key={video.socketID}>
                             <h2>{video.socketID}</h2>
 
-                            <video data-socket={video.socketId}
+                            <video data-socket={video.socketID}
                             ref={ref => {
                                 if(ref && video.stream) {
                                     ref.srcObject = video.stream;

@@ -90,7 +90,7 @@ export default function Authentication() {
             </div>
 
             <Box component="form" noValidate sx={{ mt: 1 }}>
-                {formState==1? <TextField
+                {formState===1? <TextField
                 margin="normal"
                 required
                 fullWidth
