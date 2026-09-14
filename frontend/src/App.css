@@ -5,7 +5,7 @@
   background-repeat: no-repeat;
   background-size: cover;
   color: white;
-  
+
 }
 
 .landingPageContainer nav {
@@ -23,7 +23,7 @@
 
 .landingPageContainer nav .navlist {
   display: flex;
-  gap:1.6rem;
+  gap: 1.6rem;
   cursor: pointer;
 }
 
@@ -32,14 +32,14 @@
   justify-content: space-between;
   padding-inline: 3rem;
   height: 70vh;
-  align-items:center;
+  align-items: center;
 }
 
-.landingMainContainer > div:nth-child(1) {
+.landingMainContainer>div:nth-child(1) {
   font-size: 2.2rem;
 }
 
-.landingMainContainer > div:nth-child(1) div[role="button"]{
+.landingMainContainer>div:nth-child(1) div[role="button"] {
   background-color: #D97500;
   width: fit-content;
   padding: 1rem;
@@ -47,15 +47,48 @@
   margin-top: 1.9rem;
 }
 
-.landingMainContainer > div:nth-child(1) div[role="button"] a {
-   text-decoration: none;
-   color: white;
-   font-size: 1.7rem;
+.landingMainContainer>div:nth-child(1) div[role="button"] a {
+  text-decoration: none;
+  color: white;
+  font-size: 1.7rem;
 }
 
-.landingMainContainer > div:nth-child(2) img{
-  height:70vh;
+.landingMainContainer>div:nth-child(2) img {
+  height: 70vh;
   width: auto;
 }
 
+.Guest {
+  border: 2px solid black;
+  background-color: white;
+  color: black;
+  padding: .2rem;
+  border-radius: 4px;
+  width: fit-content;
+}
 
+.Register {
+  border: 2px solid black;
+  background-color: white;
+  color: black;
+  padding: .2rem;
+  border-radius: 4px;
+  width: fit-content;
+
+}
+
+.Login-btn {
+  border: 2px solid black;
+  background-color: white;
+  color: black;
+  padding: .2rem;
+  border-radius: 4px;
+  width: fit-content;
+
+}
+
+nav {
+  border: 2px solid black;
+  border-radius: 10px;
+  background-color: rgb(49, 26, 139);
+}
