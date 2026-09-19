@@ -4,6 +4,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { io } from "socket.io-client";
 import styles from "../styles/videoComponent.module.css";
+import IconButton from "@mui/material/IconButton";
 
 
 const server_url = "http://localhost:8000";
@@ -66,7 +67,7 @@ function VideoMeetComponent() {
         try {
             let videoPerm = false;
             let audioPerm = false;
-            
+
             try {
                 const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
                 if (videoStream) {
@@ -307,7 +308,7 @@ function VideoMeetComponent() {
                 if (id === socketIdRef.current) {
                     for (let id2 in connections) {
                         if (id2 === socketIdRef.current) continue
-                        
+
                         connections[id2].createOffer().then((description) => {
                             connections[id2].setLocalDescription(description)
                                 .then(() => {
@@ -355,12 +356,18 @@ function VideoMeetComponent() {
                     <div>
                         <video ref={localVideoRef} autoPlay muted></video>
                     </div>
-                </div> : <>
+                </div> : <div className={styles.meetVideoContainer}>
+                    <div className={styles.buttonContainers}>
+                        <IconButton style={{ color: "white" }}>
+                            {(video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+                        </IconButton>
+
+                    </div>
                     <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted></video>
                     <h2>My socket ID: {socketId}</h2>
 
                     {videos.map((video) => (
-                        <div key={video.socketID}>
+                        <div key={video.socketID} className={styles.conferenceView}>
                             <h2>{video.socketID}</h2>
 
                             <video data-socket={video.socketID}
@@ -373,7 +380,7 @@ function VideoMeetComponent() {
                                 autoPlay playsInline />
                         </div>
                     ))}
-                </>
+                </div>
             }
 
             {/* {window.location.href} */}
