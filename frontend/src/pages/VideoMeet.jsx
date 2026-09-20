@@ -5,6 +5,12 @@ import Button from "@mui/material/Button";
 import { io } from "socket.io-client";
 import styles from "../styles/videoComponent.module.css";
 import IconButton from "@mui/material/IconButton";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import VideocamOffIcon from "@mui/icons-material/VideocamOff";
+import CallEndIcon from "@mui/icons-material/CallEnd";
+import MicIcon from '@mui/icons-material/Mic';
+import MicOffIcon from "@mui/icons-material/MicOff";
+
 
 
 const server_url = "http://localhost:8000";
@@ -359,9 +365,15 @@ function VideoMeetComponent() {
                 </div> : <div className={styles.meetVideoContainer}>
                     <div className={styles.buttonContainers}>
                         <IconButton style={{ color: "white" }}>
-                            {(video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
+                            {(Video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
 
+                        <IconButton style={{ color: "white" }}>
+                            <CallEndIcon />
+                        </IconButton>
+                        <IconButton>
+                            {(Audio === true) ? <MicIcon /> : <MicOffIcon />}
+                        </IconButton>
                     </div>
                     <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted></video>
                     <h2>My socket ID: {socketId}</h2>
