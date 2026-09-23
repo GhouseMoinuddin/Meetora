@@ -10,7 +10,10 @@ import VideocamOffIcon from "@mui/icons-material/VideocamOff";
 import CallEndIcon from "@mui/icons-material/CallEnd";
 import MicIcon from '@mui/icons-material/Mic';
 import MicOffIcon from "@mui/icons-material/MicOff";
-
+import ScreenShareIcon from "@mui/icons-material/ScreenShare";
+import StopScreenShareIcon from "@mui/icons-material/StopScreenShare";
+import Badge from "@mui/material/Badge";
+import ChatIcon from "@mui/icons-material/Chat";
 
 
 const server_url = "http://localhost:8000";
@@ -368,12 +371,26 @@ function VideoMeetComponent() {
                             {(Video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
 
-                        <IconButton style={{ color: "white" }}>
+                        <IconButton style={{ color: "red", hover: "white", transition: "all 0.3s ease" }}>
                             <CallEndIcon />
                         </IconButton>
-                        <IconButton>
+
+                        <IconButton style={{ color: "white" }}>
                             {(Audio === true) ? <MicIcon /> : <MicOffIcon />}
                         </IconButton>
+
+                        {ScreenAvailable === true ?
+                            <IconButton style={{ color: "white" }}>
+                                {Screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+                            </IconButton> : <></>}
+
+                        <Badge badgeContent={newMessages}>
+                            <IconButton style={{ color: "white" }}>
+                                <ChatIcon />
+                            </IconButton>
+
+                        </Badge>
+
                     </div>
                     <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted></video>
                     <h2>My socket ID: {socketId}</h2>
