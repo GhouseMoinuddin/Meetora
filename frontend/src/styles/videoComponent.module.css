@@ -25,7 +25,20 @@
 }
 
 .buttonContainers svg {
-    font-size: 4rem;
+    font-size: 3 rem;
 }
 
-.conferenceView {}
+.conferenceView {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+}
+
+.conferenceView video {
+    width: 40vw;
+    height: 20vh;
+    min-width: 30vw;
+    border-radius: 10px;
+
+}

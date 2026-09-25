@@ -40,7 +40,7 @@ function VideoMeetComponent() {
     let [ScreenAvailable, setScreenAvailable] = useState();
     let [messages, setMessages] = useState([]);
     let [message, setMessage] = useState("");
-    let [newMessages, setNewmessages] = useState(0);
+    let [newMessages, setNewmessages] = useState(3);
     let [askForUsername, setAskForUsername] = useState(true);
     let [username, setUsername] = useState("");
     const [socketId, setSocketId] = useState("");
@@ -339,6 +339,38 @@ function VideoMeetComponent() {
         setAskForUsername(false);
         getMedia();
     }
+    let handleVideo = () => {
+        setVideo(!Video);
+    }
+
+    let handleAudio = () => {
+        setAudio(!Audio);
+    }
+
+    // let getDisplayMedia = () => {
+    //     if (Screen) {
+    //         if (navigator.mediaDevices.getDisplayMedia) {
+    //             navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+    //                 .then((getDisplayMediaSuccess) => {
+    //                 .then()
+
+    //                 })
+    //                 .catch(err => console.log(err))
+    //         }
+
+    //     }
+
+    // }
+
+    useEffect(() => {
+        if (Screen !== undefined) {
+            // getDisplayMedia();
+        }
+    }, [Screen])
+
+    let handleScreen = () => {
+        setScreen(!Screen);
+    }
 
     // const connectToSocketServer = () => {
     //     socketRef.current = io(server_url);
@@ -367,7 +399,7 @@ function VideoMeetComponent() {
                     </div>
                 </div> : <div className={styles.meetVideoContainer}>
                     <div className={styles.buttonContainers}>
-                        <IconButton style={{ color: "white" }}>
+                        <IconButton onClick={handleVideo} style={{ color: "white" }}>
                             {(Video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
                         </IconButton>
 
@@ -375,7 +407,7 @@ function VideoMeetComponent() {
                             <CallEndIcon />
                         </IconButton>
 
-                        <IconButton style={{ color: "white" }}>
+                        <IconButton onClick={handleAudio} style={{ color: "white" }}>
                             {(Audio === true) ? <MicIcon /> : <MicOffIcon />}
                         </IconButton>
 
@@ -384,7 +416,7 @@ function VideoMeetComponent() {
                                 {Screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
                             </IconButton> : <></>}
 
-                        <Badge badgeContent={newMessages}>
+                        <Badge badgeContent={newMessages} max={999} color="secondary">
                             <IconButton style={{ color: "white" }}>
                                 <ChatIcon />
                             </IconButton>
@@ -393,22 +425,24 @@ function VideoMeetComponent() {
 
                     </div>
                     <video className={styles.meetUserVideo} ref={localVideoRef} autoPlay muted></video>
-                    <h2>My socket ID: {socketId}</h2>
+                    <h2>{socketId}</h2>
 
-                    {videos.map((video) => (
-                        <div key={video.socketID} className={styles.conferenceView}>
-                            <h2>{video.socketID}</h2>
+                    <div className={styles.conferenceView}>
+                        {videos.map((video) => (
+                            <div key={video.socketID}>
+                                {/* <h2>{video.socketID}</h2> */}
 
-                            <video data-socket={video.socketID}
-                                ref={ref => {
-                                    if (ref && video.stream) {
-                                        ref.srcObject = video.stream;
-                                        ref.play().catch(e => console.error("Autoplay blocked by browser:", e));
-                                    }
-                                }}
-                                autoPlay playsInline />
-                        </div>
-                    ))}
+                                <video data-socket={video.socketID}
+                                    ref={ref => {
+                                        if (ref && video.stream) {
+                                            ref.srcObject = video.stream;
+                                            ref.play().catch(e => console.error("Autoplay blocked by browser:", e));
+                                        }
+                                    }}
+                                    autoPlay playsInline />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             }
 
