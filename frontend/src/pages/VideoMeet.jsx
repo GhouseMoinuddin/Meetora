@@ -14,6 +14,7 @@ import ScreenShareIcon from "@mui/icons-material/ScreenShare";
 import StopScreenShareIcon from "@mui/icons-material/StopScreenShare";
 import Badge from "@mui/material/Badge";
 import ChatIcon from "@mui/icons-material/Chat";
+import { style } from "@mui/system";
 
 
 const server_url = "http://localhost:8000";
@@ -36,7 +37,7 @@ function VideoMeetComponent() {
     let [Video, setVideo] = useState();
     let [Audio, setAudio] = useState();
     let [Screen, setScreen] = useState();
-    let [showModel, setShowModel] = useState();
+    let [showModal, setShowModal] = useState(true);
     let [ScreenAvailable, setScreenAvailable] = useState();
     let [messages, setMessages] = useState([]);
     let [message, setMessage] = useState("");
@@ -347,29 +348,72 @@ function VideoMeetComponent() {
         setAudio(!Audio);
     }
 
-    // let getDisplayMedia = () => {
-    //     if (Screen) {
-    //         if (navigator.mediaDevices.getDisplayMedia) {
-    //             navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-    //                 .then((getDisplayMediaSuccess) => {
-    //                 .then()
+    let getDisplayMediaSuccess = (stream) => {
+        try {
+            window.localStream.getTracks().forEach(track => track.stop());
+        } catch (error) {
+            console.log(error);
+        }
+        window.localStream = stream;
+        localVideoRef.current.srcObject = stream;
 
-    //                 })
-    //                 .catch(err => console.log(err))
-    //         }
+        for (let id in connections) {
+            if (id === socketIdRef.current) continue;
 
-    //     }
+            connections[id].addStream(window.localStream);
+            connections[id].createOffer().then((description) => [
+                connections[id].setLocalDescription(description)
+                    .then(() => {
+                        socketRef.current.emit("signal", id, JSON.stringify({ "sdp": connections[id].localDescription }))
 
-    // }
+                    })
+                    .catch(error => console.log(error))
+            ])
+        }
+
+        stream.getTracks().forEach(track => track.onended = () => {
+            setScreen(false);
+
+            try {
+                let tracks = localVideoRef.current.srcObject.getTracks()
+                tracks.forEach(track => track.stop());
+            } catch (error) {
+                console.log(error);
+            }
+
+            //TODO Black silence
+
+            let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
+            window.localStream = blackSilence();
+            localVideoRef.current.srcObject = window.localStream;
+
+            getUserMedia();
+        })
+    }
+
+    let getDisplayMedia = () => {
+        if (Screen) {
+            if (navigator.mediaDevices.getDisplayMedia) {
+                navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+                    .then(getDisplayMediaSuccess)
+                    .then((stream) => { })
+                    .catch((error) => console.log(error));
+            }
+        }
+    }
 
     useEffect(() => {
         if (Screen !== undefined) {
-            // getDisplayMedia();
+            getDisplayMedia();
         }
     }, [Screen])
 
     let handleScreen = () => {
         setScreen(!Screen);
+    }
+
+    let sendMessage = () => {
+
     }
 
     // const connectToSocketServer = () => {
@@ -398,6 +442,17 @@ function VideoMeetComponent() {
                         <video ref={localVideoRef} autoPlay muted></video>
                     </div>
                 </div> : <div className={styles.meetVideoContainer}>
+
+                    {showModal ? <div className={styles.chatRoom}>
+                        <div className={styles.chatContainer}></div>
+                        <h1>Chat</h1>
+
+                        <div className={styles.chattingArea}>
+                            <TextField id="outlined-basic" label="Enter your message" variant="outlined"></TextField>
+                            <Button variant="contained" onClick={sendMessage}>Send</Button>
+                        </div>
+                    </div> : <></>}
+
                     <div className={styles.buttonContainers}>
                         <IconButton onClick={handleVideo} style={{ color: "white" }}>
                             {(Video === true) ? <VideocamIcon /> : <VideocamOffIcon />}
@@ -412,12 +467,12 @@ function VideoMeetComponent() {
                         </IconButton>
 
                         {ScreenAvailable === true ?
-                            <IconButton style={{ color: "white" }}>
+                            <IconButton onClick={handleScreen} style={{ color: "white" }}>
                                 {Screen === true ? <ScreenShareIcon /> : <StopScreenShareIcon />}
                             </IconButton> : <></>}
 
                         <Badge badgeContent={newMessages} max={999} color="secondary">
-                            <IconButton style={{ color: "white" }}>
+                            <IconButton onClick={() => setShowModal(!showModal)} style={{ color: "white" }}>
                                 <ChatIcon />
                             </IconButton>
 
