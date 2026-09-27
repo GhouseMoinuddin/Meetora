@@ -239,7 +239,17 @@ function VideoMeetComponent() {
 
 
     //TODO add Message
-    let addMessage = () => {
+    let addMessage = (data, sender, socketIDSender) => {
+
+        setMessages((prevMessages) => [
+            ...prevMessages,
+            { sender: sender, data: data }
+        ])
+
+        if (socketIDSender !== socketIDSender.current) {
+            setMessages((prevMessages) => prevMessages + 1)
+        }
+
 
     }
 
@@ -413,6 +423,9 @@ function VideoMeetComponent() {
     }
 
     let sendMessage = () => {
+        socketRef.current.emit("chat-message", message, username);
+        setMessage("");
+
 
     }
 
@@ -448,7 +461,7 @@ function VideoMeetComponent() {
                         <h1>Chat</h1>
 
                         <div className={styles.chattingArea}>
-                            <TextField id="outlined-basic" label="Enter your message" variant="outlined"></TextField>
+                            <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter your message" variant="outlined"></TextField>
                             <Button variant="contained" onClick={sendMessage}>Send</Button>
                         </div>
                     </div> : <></>}
