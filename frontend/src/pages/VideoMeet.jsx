@@ -247,7 +247,7 @@ function VideoMeetComponent() {
         ])
 
         if (socketIDSender !== socketIDSender.current) {
-            setMessages((prevMessages) => prevMessages + 1)
+            setNewMessages((prevMessages) => prevMessages + 1)
         }
 
 
@@ -459,6 +459,18 @@ function VideoMeetComponent() {
                     {showModal ? <div className={styles.chatRoom}>
                         <div className={styles.chatContainer}></div>
                         <h1>Chat</h1>
+
+                        <div className={styles.chattingDisplay}>
+
+                            {messages.length > 0 ? messages.map((item, index) => {
+                                return (
+                                    <div style={{ marginBottom: "20px" }} key={index}>
+                                        <p style={{ fontWeight: bold }}>{item.sender}</p>
+                                        <p>{item.data}</p>
+                                    </div>
+                                )
+                            }) : <p>No Messages yet!</p>}
+                        </div>
 
                         <div className={styles.chattingArea}>
                             <TextField value={message} onChange={(e) => setMessage(e.target.value)} id="outlined-basic" label="Enter your message" variant="outlined"></TextField>
