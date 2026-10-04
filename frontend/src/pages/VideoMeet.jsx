@@ -14,7 +14,6 @@ import ScreenShareIcon from "@mui/icons-material/ScreenShare";
 import StopScreenShareIcon from "@mui/icons-material/StopScreenShare";
 import Badge from "@mui/material/Badge";
 import ChatIcon from "@mui/icons-material/Chat";
-import { style } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 
 
@@ -145,7 +144,9 @@ function VideoMeetComponent() {
         for (let id in connections) {
             if (id === socketIdRef.current) continue;
 
-            connections[id].addStream(window.localStream)
+            window.localStream.getTracks().forEach(track => {
+                connections[id].addTrack(track, window.localStream);
+            })
 
             connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
@@ -174,7 +175,9 @@ function VideoMeetComponent() {
             localVideoRef.current.srcObject = window.localStream;
 
             for (let id in connections) {
-                connections[id].addStream(window.localStream);
+                window.localStream.getTracks().forEach(track => {
+                    connections[id].addTrack(track, window.localStream);
+                });
                 connections[id].createOffer().then((description) => {
                     connections[id].setLocalDescription(description)
                         .then(() => {
@@ -247,7 +250,7 @@ function VideoMeetComponent() {
             { sender: sender, data: data }
         ])
 
-        if (socketIDSender !== socketIDSender.current) {
+        if (socketIDSender !== socketIdRef.current) {
             setNewMessages((prevMessages) => prevMessages + 1)
         }
 
@@ -284,30 +287,29 @@ function VideoMeetComponent() {
 
                     connections[socketListId].ontrack = (event) => {
                         let stream = event.streams[0];
-                        let videoExists = videoRef.current.find((video) => video.socketID === socketListId);
 
-                        if (videoExists) {
-                            setVideos(videos => {
-                                const updatedVideos = videos.map(v =>
+                        setVideos(prevVideos => {
+                            let videoExists = prevVideos.find((video) => video.socketID === socketListId);
+
+                            if (videoExists) {
+                                const updatedVideos = prevVideos.map(v =>
                                     v.socketID === socketListId ? { ...v, stream: stream } : v
                                 );
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
-                            })
-                        } else {
-                            let newVideo = {
-                                socketID: socketListId,
-                                stream: stream,
-                                autoPlay: true,
-                                playsinline: true
-                            }
+                            } else {
+                                let newVideo = {
+                                    socketID: socketListId,
+                                    stream: stream,
+                                    autoPlay: true,
+                                    playsinline: true
+                                }
 
-                            setVideos(videos => {
-                                const updatedVideos = [...videos, newVideo];
+                                const updatedVideos = [...prevVideos, newVideo];
                                 videoRef.current = updatedVideos;
                                 return updatedVideos;
-                            })
-                        }
+                            }
+                        })
 
                     };
                     if (window.localStream !== undefined && window.localStream !== null) {
@@ -374,14 +376,14 @@ function VideoMeetComponent() {
             if (id === socketIdRef.current) continue;
 
             connections[id].addStream(window.localStream);
-            connections[id].createOffer().then((description) => [
+            connections[id].createOffer().then((description) => {
                 connections[id].setLocalDescription(description)
                     .then(() => {
                         socketRef.current.emit("signal", id, JSON.stringify({ "sdp": connections[id].localDescription }))
 
                     })
                     .catch(error => console.log(error))
-            ])
+            })
         }
 
         stream.getTracks().forEach(track => track.onended = () => {
@@ -435,7 +437,7 @@ function VideoMeetComponent() {
             let tracks = localVideoRef.current.srcObject.getTracks();
             tracks.forEach(track => track.stop());
         }
-        catch(error) {
+        catch (error) {
             // console.log(error);
             routeTo("/home");
         }
@@ -477,7 +479,7 @@ function VideoMeetComponent() {
                             {messages.length > 0 ? messages.map((item, index) => {
                                 return (
                                     <div style={{ marginBottom: "20px" }} key={index}>
-                                        <p style={{ fontWeight: bold }}>{item.sender}</p>
+                                        <p style={{ fontWeight: "bold" }}>{item.sender}</p>
                                         <p>{item.data}</p>
                                     </div>
                                 )
@@ -496,7 +498,7 @@ function VideoMeetComponent() {
                         </IconButton>
 
                         <IconButton onClick={handleEndCall} style={{ color: "red", hover: "white", transition: "all 0.3s ease" }}>
-                            <CallEndIcon  />
+                            <CallEndIcon />
                         </IconButton>
 
                         <IconButton onClick={handleAudio} style={{ color: "white" }}>

@@ -17,6 +17,7 @@
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
     "react-scripts": "5.0.1",
+    "react-toastify": "^11.1.0",
     "socket.io-client": "^4.8.3",
     "web-vitals": "^2.1.4"
   },
@@ -52,6 +53,7 @@
     "axios@1.20.0": true,
     "http-status@2.1.0": true,
     "socket.io-client@4.8.3": true,
-    "@mui/icons-material@9.4.0": true
+    "@mui/icons-material@9.4.0": true,
+    "react-toastify@11.1.0": true
   }
 }

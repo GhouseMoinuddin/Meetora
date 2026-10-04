@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import { User } from "../models/usermodel.js";
+import { Meeting } from "../models/meetingmodel.js";
 import bcrypt, { hash } from "bcrypt";
 import crypto from "crypto"
 
@@ -74,7 +75,13 @@ const addToHistory = async (req, res) => {
     const { token, meeting_Code } = req.body;
 
     try {
-
+        const user = await User.findOne({ token: token });
+        const newMeeting = new Meeting({
+            user_id: user.username,
+            meetingCode: meeting_Code
+        });
+        await newMeeting.save();
+        res.status(httpStatus.CREATED).json({ message: "Added to history" });
     } catch (error) {
         return res.status(500).json({ message: "Something went wrong!" });
 
@@ -82,4 +89,4 @@ const addToHistory = async (req, res) => {
 }
 
 
-export default { login, register };
+export default { login, register, getUserHistory, addToHistory };

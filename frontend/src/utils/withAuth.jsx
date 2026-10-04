@@ -1,4 +1,5 @@
-import { useContext, useEffect, useNavigate } from "react";
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 
 const withAuth = (WrappedComponent) => {

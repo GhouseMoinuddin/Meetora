@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     }
     const router = useNavigate();
 
-    const getUserOfHistory = async () => {
+    const getHistoryOfUser = async () => {
         try {
             let request = await client.get("/get_all_activity", {
                 params: {
@@ -62,8 +62,20 @@ export const AuthProvider = ({ children }) => {
         }
     }
 
+    const addToUserHistory = async (meetingCode) => {
+        try {
+            let request = await client.post("/add_to_activity", {
+                token: localStorage.getItem("token"),
+                meeting_Code: meetingCode
+            });
+            return request.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
     const data = {
-        userData, setUserData, handleRegister, handleLogin
+        userData, setUserData, handleRegister, handleLogin, getHistoryOfUser, addToUserHistory
     }
     return (
         <AuthContext.Provider value={data}>
